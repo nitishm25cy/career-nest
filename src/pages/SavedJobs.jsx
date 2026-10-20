@@ -1,128 +1,153 @@
+
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import JobCard from "../components/JobCard";
-import { useJobContext } from "../context/JobContext";
+import { loadJobs } from "../store/jobsSlice";
+import {
+  removeSavedJobFromStore,
+  loadSavedJobsFromApi,
+} from "../store/savedJobsSlice";
+import { removeSavedJobApi } from "../services/api";
 
 function SavedJobs() {
-  const {
-    jobs,
-    savedJobs,
-    removeSavedJob
-  } = useJobContext();
+  const dispatch = useDispatch();
+
+  const jobs = useSelector((state) => state.jobs.items);
+  const jobsLoading = useSelector((state) => state.jobs.loading);
+  const savedJobs = useSelector((state) => state.savedJobs);
+
+  const [loadingSaved, setLoadingSaved] = useState(true);
+  const [error, setError] = useState("");
+  const [removingId, setRemovingId] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadData() {
+      setLoadingSaved(true);
+      setError("");
+
+      try {
+        await dispatch(loadJobs()).unwrap().catch((err) => {
+          if (!jobs.length) throw err;
+        });
+
+        await dispatch(loadSavedJobsFromApi()).unwrap();
+      } catch (err) {
+        if (active) {
+          setError(
+            typeof err === "string"
+              ? err
+              : "Unable to load saved jobs. Please try again."
+          );
+        }
+      } finally {
+        if (active) setLoadingSaved(false);
+      }
+    }
+
+    loadData();
+
+    return () => {
+      active = false;
+    };
+  }, [dispatch]);
 
   const savedJobList = jobs.filter((job) =>
-    savedJobs.includes(job.id)
+    savedJobs.some((id) => String(id) === String(job.id))
   );
+
+  const handleRemoveSavedJob = async (jobId) => {
+    setRemovingId(String(jobId));
+    setError("");
+
+    try {
+      await removeSavedJobApi(jobId);
+      dispatch(removeSavedJobFromStore(jobId));
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Unable to remove this saved job. Please try again."
+      );
+    } finally {
+      setRemovingId(null);
+    }
+  };
 
   return (
     <div className="saved-jobs-page">
-
-      {/* Header */}
-      <header className="site-header">
-        <div className="header-container">
-
-          <Link to="/" className="logo">
-            Career<span>Nest</span>
-          </Link>
-
-          <nav className="main-nav">
-            <Link to="/">Home</Link>
-            <Link to="/jobs">Jobs</Link>
-
-            <Link to="/saved-jobs" className="active">
-              Saved Jobs
-            </Link>
-
-            <Link to="/applications">
-              Applications
-            </Link>
-
-            <Link to="/alerts">
-              Job Alerts
-            </Link>
-          </nav>
-
-        </div>
-      </header>
-
-      {/* Page Header */}
       <section className="saved-jobs-header">
-
-        <span className="hero-tag">
-          CAREERNEST
-        </span>
-
-        <h1>
-          Your Saved Jobs
-        </h1>
-
-        <p>
-          Keep track of opportunities you are interested in.
-        </p>
-
+        <span className="hero-tag">CAREERNEST</span>
+        <h1>Your Saved Jobs</h1>
+        <p>Keep track of opportunities you are interested in.</p>
       </section>
 
-      {/* Saved Jobs */}
       <section className="saved-jobs-content">
-
         <div className="saved-jobs-title">
           <div>
-            <span className="results-label">
-              YOUR COLLECTION
-            </span>
-
-            <h2>
-              Saved Opportunities
-            </h2>
+            <span className="results-label">YOUR COLLECTION</span>
+            <h2>Saved Opportunities</h2>
           </div>
 
-          <span className="job-count">
-            {savedJobList.length} Saved
-          </span>
+          {!loadingSaved && !error && (
+            <span className="job-count">
+              {savedJobList.length} Saved
+            </span>
+          )}
         </div>
 
-        {savedJobList.length === 0 ? (
-
+        {loadingSaved && (
           <div className="no-jobs">
-
-            <h3>
-              No saved jobs yet
-            </h3>
-
-            <p>
-              Browse available jobs and save the ones
-              you would like to explore later.
-            </p>
-
-            <Link
-              to="/jobs"
-              className="clear-filter-button"
-            >
-              Browse Jobs →
-            </Link>
-
+            <h3>Loading saved jobs...</h3>
+            <p>Please wait while we retrieve your saved opportunities.</p>
           </div>
-
-        ) : (
-
-          <div className="jobs-grid">
-
-            {savedJobList.map((job) => (
-
-              <JobCard
-                key={job.id}
-                job={job}
-                saved={true}
-                onSave={() => removeSavedJob(job.id)}
-              />
-
-            ))}
-
-          </div>
-
         )}
 
-      </section>
+        {!loadingSaved && error && (
+          <div className="no-jobs" role="alert">
+            <h3>Unable to load saved jobs</h3>
+            <p>{error}</p>
+            <button
+              className="clear-filter-button"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        )}
 
+        {!loadingSaved && !error && savedJobList.length === 0 && (
+          <div className="no-jobs">
+            <h3>No saved jobs yet</h3>
+            <p>
+              Browse available jobs and save the ones you would like
+              to explore later.
+            </p>
+            <Link to="/jobs" className="clear-filter-button">
+              Browse Jobs →
+            </Link>
+          </div>
+        )}
+
+        {!loadingSaved && !error && savedJobList.length > 0 && (
+          <div className="jobs-grid">
+            {savedJobList.map((job) => (
+              <div key={job.id}>
+                <JobCard
+                  job={job}
+                  saved={true}
+                  onSave={() => handleRemoveSavedJob(job.id)}
+                />
+
+                {removingId === String(job.id) && (
+                  <p role="status">Removing saved job...</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

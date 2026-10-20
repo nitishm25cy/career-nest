@@ -1,118 +1,69 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
 
-const emptyProfile = {
-  name: "",
-  email: "",
-  phone: "",
-  location: "",
-  education: "",
-  skills: "",
-  experience: "",
-  bio: ""
-};
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useAuth } from "../context/AuthContext";
+import { updateProfile } from "../store/profileSlice";
 
 function Profile() {
-  const [profile, setProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem("careerNestProfile");
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-      return saved
-        ? { ...emptyProfile, ...JSON.parse(saved) }
-        : emptyProfile;
-    } catch (error) {
-      return emptyProfile;
-    }
-  });
-
+  const profile = useSelector((state) => state.profile);
   const [savedMessage, setSavedMessage] = useState("");
 
+  // Update profile fields in Redux
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setProfile((previous) => ({
-      ...previous,
-      [name]: value
-    }));
+    dispatch(updateProfile({ [name]: value }));
+    setSavedMessage("");
   };
 
+  // Save confirmation
   const handleSubmit = (event) => {
     event.preventDefault();
 
     try {
-      localStorage.setItem(
-        "careerNestProfile",
-        JSON.stringify(profile)
-      );
+      // Redux middleware saves profile changes to localStorage.
+      dispatch(updateProfile({ ...profile }));
 
       setSavedMessage("Profile saved successfully!");
 
       setTimeout(() => {
         setSavedMessage("");
       }, 3000);
-
     } catch (error) {
       setSavedMessage("Unable to save profile.");
       console.error("Profile save error:", error);
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="profile-page">
-
-      <header className="site-header">
-        <div className="header-container">
-
-          <Link to="/" className="logo">
-            Career<span>Nest</span>
-          </Link>
-
-          <nav className="main-nav">
-            <Link to="/">Home</Link>
-            <Link to="/jobs">Jobs</Link>
-            <Link to="/saved-jobs">Saved Jobs</Link>
-            <Link to="/applications">Applications</Link>
-            <Link to="/alerts">Job Alerts</Link>
-            <Link to="/profile" className="active">
-              Profile
-            </Link>
-          </nav>
-
-        </div>
-      </header>
-
       <section className="saved-jobs-header">
-
-        <span className="hero-tag">
-          CAREERNEST
-        </span>
-
+        <span className="hero-tag">CAREERNEST</span>
         <h1>My Profile</h1>
-
-        <p>
-          Keep your applicant information updated.
-        </p>
-
+        <p>Keep your applicant information updated.</p>
       </section>
 
       <section className="profile-content">
-
         <div className="profile-card">
-
-          <span className="results-label">
-            APPLICANT PROFILE
-          </span>
-
+          <span className="results-label">APPLICANT PROFILE</span>
           <h2>Personal Information</h2>
 
           <form onSubmit={handleSubmit}>
-
             <div className="profile-form-grid">
-
               <div className="form-group">
-                <label>Full Name</label>
-
+                <label htmlFor="profile-name">Full Name</label>
                 <input
+                  id="profile-name"
                   type="text"
                   name="name"
                   value={profile.name}
@@ -123,9 +74,9 @@ function Profile() {
               </div>
 
               <div className="form-group">
-                <label>Email</label>
-
+                <label htmlFor="profile-email">Email</label>
                 <input
+                  id="profile-email"
                   type="email"
                   name="email"
                   value={profile.email}
@@ -136,9 +87,9 @@ function Profile() {
               </div>
 
               <div className="form-group">
-                <label>Phone</label>
-
+                <label htmlFor="profile-phone">Phone</label>
                 <input
+                  id="profile-phone"
                   type="tel"
                   name="phone"
                   value={profile.phone}
@@ -148,9 +99,9 @@ function Profile() {
               </div>
 
               <div className="form-group">
-                <label>Location</label>
-
+                <label htmlFor="profile-location">Location</label>
                 <input
+                  id="profile-location"
                   type="text"
                   name="location"
                   value={profile.location}
@@ -160,9 +111,9 @@ function Profile() {
               </div>
 
               <div className="form-group">
-                <label>Education</label>
-
+                <label htmlFor="profile-education">Education</label>
                 <input
+                  id="profile-education"
                   type="text"
                   name="education"
                   value={profile.education}
@@ -172,9 +123,9 @@ function Profile() {
               </div>
 
               <div className="form-group">
-                <label>Experience</label>
-
+                <label htmlFor="profile-experience">Experience</label>
                 <input
+                  id="profile-experience"
                   type="text"
                   name="experience"
                   value={profile.experience}
@@ -182,13 +133,12 @@ function Profile() {
                   placeholder="e.g. Fresher"
                 />
               </div>
-
             </div>
 
             <div className="form-group">
-              <label>Skills</label>
-
+              <label htmlFor="profile-skills">Skills</label>
               <input
+                id="profile-skills"
                 type="text"
                 name="skills"
                 value={profile.skills}
@@ -198,40 +148,44 @@ function Profile() {
             </div>
 
             <div className="form-group">
-              <label>Professional Bio</label>
-
+              <label htmlFor="profile-bio">Professional Bio</label>
               <textarea
+                id="profile-bio"
                 name="bio"
                 value={profile.bio}
                 onChange={handleChange}
                 placeholder="Tell employers about yourself..."
-                rows="5"
+                rows={5}
               />
             </div>
 
-                <div className="profile-save-area">
+            <div className="profile-save-area">
+              <button type="submit" className="apply-button">
+                Save Profile →
+              </button>
 
-                  <button
-                    type="submit"
-                    className="apply-button"
-                  >
-                    Save Profile →
-                  </button>
+              {savedMessage && (
+                <p
+                  className="profile-save-message"
+                  role="status"
+                >
+                  {savedMessage}
+                </p>
+              )}
+            </div>
 
-                {savedMessage && (
-                   <p className="profile-save-message">
-                     ✓ {savedMessage}
-                    </p>
-                 )}
-
-</div>
-
+            <div className="profile-logout-area">
+              <button
+                type="button"
+                className="profile-logout-button"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
           </form>
-
         </div>
-
       </section>
-
     </div>
   );
 }

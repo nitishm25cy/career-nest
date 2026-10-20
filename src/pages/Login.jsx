@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -17,12 +18,12 @@ function Login() {
     event.preventDefault();
     setError("");
 
-    if (!email || !password) {
+    if (!email.trim() || !password) {
       setError("Please enter your email and password.");
       return;
     }
 
-    const result = login(email, password);
+    const result = login(email.trim(), password);
 
     if (!result.success) {
       setError(result.message);
@@ -36,27 +37,34 @@ function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-
-        <Link to="/" className="auth-logo">
+        <Link to="/" className="auth-logo" aria-label="CareerNest home">
           Career<span>Nest</span>
         </Link>
 
         <span className="hero-tag">WELCOME BACK</span>
 
-        <h1>Sign in to CareerNest</h1>
+        <h1 id="login-heading">Sign in to CareerNest</h1>
 
         <p className="auth-description">
           Access your applications, saved jobs and career opportunities.
         </p>
 
         {error && (
-          <div className="auth-error">
+          <div
+            className="auth-error"
+            id="login-error"
+            role="alert"
+            aria-live="assertive"
+          >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-
+        <form
+          onSubmit={handleSubmit}
+          aria-labelledby="login-heading"
+          noValidate
+        >
           <Input
             label="Email Address"
             name="email"
@@ -64,6 +72,9 @@ function Login() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             placeholder="Enter your email"
+            required
+            autoComplete="email"
+            aria-describedby={error ? "login-error" : undefined}
           />
 
           <Input
@@ -73,19 +84,20 @@ function Login() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Enter your password"
+            required
+            autoComplete="current-password"
+            aria-describedby={error ? "login-error" : undefined}
           />
 
           <Button type="submit" className="auth-submit">
             Login →
           </Button>
-
         </form>
 
         <p className="auth-switch">
           New to CareerNest?{" "}
           <Link to="/signup">Create an account</Link>
         </p>
-
       </div>
     </div>
   );

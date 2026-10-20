@@ -1,148 +1,141 @@
-import { NavLink, Outlet, Link, useNavigate } from "react-router-dom";
+
+import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useJobContext } from "../context/JobContext";
 
 function Dashboard() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  const {
+    applicationCount,
+    savedJobCount,
+    jobAlerts
+  } = useJobContext();
+
+  const dashboardLinks = [
+    {
+      to: "/dashboard",
+      label: "Overview",
+      icon: "⌂",
+      end: true
+    },
+    {
+      to: "/dashboard/applications",
+      label: "My Applications",
+      icon: "▤"
+    },
+    {
+      to: "/dashboard/saved-jobs",
+      label: "Saved Jobs",
+      icon: "♡"
+    },
+    {
+      to: "/dashboard/job-alerts",
+      label: "Job Alerts",
+      icon: "♧"
+    },
+    {
+      to: "/dashboard/profile",
+      label: "My Profile",
+      icon: "♙"
+    }
+  ];
+
+  const firstName = user?.name?.trim().split(/\s+/)[0] || "Applicant";
 
   return (
     <div className="dashboard-page">
-
-      {/* Main CareerNest Header */}
-      <header className="site-header">
-        <div className="header-container">
-
-          <Link to="/" className="logo">
-            Career<span>Nest</span>
-          </Link>
-
-          <nav className="main-nav">
-
-            <Link to="/">Home</Link>
-
-            <Link to="/jobs">Jobs</Link>
-
-            <Link to="/saved-jobs">Saved Jobs</Link>
-
-            <Link to="/applications">Applications</Link>
-
-            <Link to="/alerts">Job Alerts</Link>
-
-  
-
-            <Link to="/dashboard/profile">
-              Profile
-            </Link> 
-
-            <button
-              type="button"
-              className="logout-button"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-
-          </nav>
-
-        </div>
-      </header>
-
-      {/* Dashboard Area */}
-      <section className="dashboard-container">
-
-        <div className="dashboard-heading">
-
-          <span className="hero-tag">
-            CAREERNEST DASHBOARD
+      <section className="dashboard-welcome">
+        <div>
+          <span className="dashboard-eyebrow">
+            YOUR CAREER SPACE
           </span>
 
-          <h1>Applicant Dashboard</h1>
+          <h1>Welcome back, {firstName}!</h1>
 
           <p>
-            Welcome back{user?.name ? `, ${user.name}` : ""}.
-            Manage your applications, saved jobs, alerts and profile
-            from one place.
+            Keep track of your career journey, applications,
+            and opportunities all in one place.
           </p>
-
         </div>
 
-        <div className="dashboard-layout">
-
-          {/* Sidebar */}
-          <aside className="dashboard-sidebar">
-
-            <NavLink
-              to="/dashboard"
-              end
-              className={({ isActive }) =>
-                isActive
-                  ? "dashboard-link active"
-                  : "dashboard-link"
-              }
-            >
-              Overview
-            </NavLink>
-
-            <NavLink
-              to="/dashboard/applications"
-              className={({ isActive }) =>
-                isActive
-                  ? "dashboard-link active"
-                  : "dashboard-link"
-              }
-            >
-              Applications
-            </NavLink>
-
-            <NavLink
-              to="/dashboard/saved-jobs"
-              className={({ isActive }) =>
-                isActive
-                  ? "dashboard-link active"
-                  : "dashboard-link"
-              }
-            >
-              Saved Jobs
-            </NavLink>
-
-            <NavLink
-              to="/dashboard/job-alerts"
-              className={({ isActive }) =>
-                isActive
-                  ? "dashboard-link active"
-                  : "dashboard-link"
-              }
-            >
-              Job Alerts
-            </NavLink>
-
-            <NavLink
-              to="/dashboard/profile"
-              className={({ isActive }) =>
-                isActive
-                  ? "dashboard-link active"
-                  : "dashboard-link"
-              }
-            >
-              Profile
-            </NavLink>
-
-          </aside>
-
-          {/* Nested pages appear here */}
-          <main className="dashboard-main">
-            <Outlet />
-          </main>
-
+        <div className="dashboard-avatar">
+          {firstName.charAt(0).toUpperCase()}
         </div>
-
       </section>
 
+      <section className="dashboard-stats">
+        <article className="dashboard-stat-card">
+          <div className="dashboard-stat-icon blue">▤</div>
+          <div>
+            <p>Applications</p>
+            <h2>{applicationCount ?? 0}</h2>
+            <span>Jobs you've applied for</span>
+          </div>
+        </article>
+
+        <article className="dashboard-stat-card">
+          <div className="dashboard-stat-icon purple">♡</div>
+          <div>
+            <p>Saved Jobs</p>
+            <h2>{savedJobCount ?? 0}</h2>
+            <span>Opportunities to revisit</span>
+          </div>
+        </article>
+
+        <article className="dashboard-stat-card">
+          <div className="dashboard-stat-icon orange">♧</div>
+          <div>
+            <p>Job Alerts</p>
+            <h2>{jobAlerts?.length ?? 0}</h2>
+            <span>Your active job searches</span>
+          </div>
+        </article>
+      </section>
+
+      <section className="dashboard-workspace">
+        <aside className="dashboard-sidebar">
+          <div className="dashboard-sidebar-heading">
+            <span>WORKSPACE</span>
+          </div>
+
+          <nav className="dashboard-sidebar-nav">
+            {dashboardLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  isActive
+                    ? "dashboard-link active"
+                    : "dashboard-link"
+                }
+              >
+                <span className="dashboard-link-icon">
+                  {item.icon}
+                </span>
+
+                <span>{item.label}</span>
+
+                <span className="dashboard-link-arrow">›</span>
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="dashboard-sidebar-note">
+            <span className="dashboard-note-icon">✦</span>
+            <h3>Keep growing!</h3>
+            <p>
+              Keep your profile updated to stay ready for
+              your next opportunity.
+            </p>
+          </div>
+        </aside>
+
+        <main className="dashboard-main">
+          <Outlet />
+        </main>
+      </section>
     </div>
   );
 }

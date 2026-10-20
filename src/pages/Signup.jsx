@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -24,15 +25,20 @@ function Signup() {
       ...previous,
       [name]: value
     }));
+
+    if (error) setError("");
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     setError("");
 
+    const name = formData.name.trim();
+    const email = formData.email.trim();
+
     if (
-      !formData.name ||
-      !formData.email ||
+      !name ||
+      !email ||
       !formData.password ||
       !formData.confirmPassword
     ) {
@@ -50,11 +56,7 @@ function Signup() {
       return;
     }
 
-    const result = signup(
-      formData.name,
-      formData.email,
-      formData.password
-    );
+    const result = signup(name, email, formData.password);
 
     if (!result.success) {
       setError(result.message);
@@ -67,14 +69,17 @@ function Signup() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-
-        <Link to="/" className="auth-logo">
+        <Link
+          to="/"
+          className="auth-logo"
+          aria-label="CareerNest home"
+        >
           Career<span>Nest</span>
         </Link>
 
         <span className="hero-tag">JOIN CAREERNEST</span>
 
-        <h1>Create your account</h1>
+        <h1 id="signup-heading">Create your account</h1>
 
         <p className="auth-description">
           Create your CareerNest account and start discovering new
@@ -82,19 +87,30 @@ function Signup() {
         </p>
 
         {error && (
-          <div className="auth-error">
+          <div
+            className="auth-error"
+            id="signup-error"
+            role="alert"
+            aria-live="assertive"
+          >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-
+        <form
+          onSubmit={handleSubmit}
+          aria-labelledby="signup-heading"
+          noValidate
+        >
           <Input
             label="Full Name"
             name="name"
             value={formData.name}
             onChange={handleChange}
             placeholder="Enter your full name"
+            required
+            autoComplete="name"
+            aria-describedby={error ? "signup-error" : undefined}
           />
 
           <Input
@@ -104,6 +120,9 @@ function Signup() {
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter your email"
+            required
+            autoComplete="email"
+            aria-describedby={error ? "signup-error" : undefined}
           />
 
           <Input
@@ -113,6 +132,9 @@ function Signup() {
             value={formData.password}
             onChange={handleChange}
             placeholder="Create a password"
+            required
+            autoComplete="new-password"
+            aria-describedby={error ? "signup-error" : undefined}
           />
 
           <Input
@@ -122,19 +144,20 @@ function Signup() {
             value={formData.confirmPassword}
             onChange={handleChange}
             placeholder="Confirm your password"
+            required
+            autoComplete="new-password"
+            aria-describedby={error ? "signup-error" : undefined}
           />
 
           <Button type="submit" className="auth-submit">
             Create Account →
           </Button>
-
         </form>
 
         <p className="auth-switch">
           Already have an account?{" "}
           <Link to="/login">Login here</Link>
         </p>
-
       </div>
     </div>
   );

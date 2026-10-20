@@ -2,59 +2,76 @@ import { Link } from "react-router-dom";
 
 function JobCard({ job, saved, onSave }) {
   return (
-    <div className="job-card">
+    <article className="job-card">
 
+      {/* Top section */}
       <div className="job-card-top">
 
         <div className="company-logo">
-          {job.company.charAt(0)}
+          {job.company?.charAt(0)}
         </div>
 
         <button
-          className={`save-job ${saved ? "saved" : ""}`}
+          type="button"
+          className={`save-job-button ${saved ? "saved" : ""}`}
           onClick={() => onSave(job.id)}
+          aria-label={saved ? "Remove saved job" : "Save job"}
         >
           {saved ? "♥" : "♡"}
         </button>
 
       </div>
 
-      <div className="job-card-content">
+      {/* Industry */}
+      <span className="job-industry">
+        {job.industry}
+      </span>
 
-        <span className="job-industry">
-          {job.industry}
+      {/* Job title */}
+      <h3 className="job-title">
+        {job.title}
+      </h3>
+
+      {/* Company */}
+      <p className="job-company">
+        {job.company}
+      </p>
+
+      {/* Job information */}
+      <div className="job-info">
+
+        <span>
+          📍 {job.location}
         </span>
 
-        <h3>{job.title}</h3>
+        <span>
+          💼 {job.type}
+        </span>
 
-        <p className="company-name">
-          {job.company}
-        </p>
+        <span>
+          💰 {job.salary}
+        </span>
 
-        <div className="job-meta">
-          <span>📍 {job.location}</span>
-          <span>💼 {job.type}</span>
-        </div>
-
-        <div className="job-meta">
-          <span>💰 {job.salary}</span>
-          <span>⌛ {job.experience}</span>
-        </div>
+        <span>
+          ⏳ {job.experience}
+        </span>
 
       </div>
 
-      <div className="job-card-bottom">
+      {/* Button */}
+      <div className="job-card-footer">
 
         <Link
           to={`/job/${job.id}`}
-          className="view-job-btn"
+          className="view-details-button"
         >
           View Details
+          <span>→</span>
         </Link>
 
       </div>
 
-    </div>
+    </article>
   );
 }
 

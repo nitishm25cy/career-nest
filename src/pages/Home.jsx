@@ -4,34 +4,9 @@ function Home() {
   return (
     <div className="home-page">
 
-      <header className="navbar">
-        <div className="logo">
-          <span>Career</span>Nest
-        </div>
-
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/jobs">Find Jobs</Link>
-          <Link to="/saved-jobs">Saved Jobs</Link>
-          <Link to="/applications">Applications</Link>
-          <Link to="/alerts">Job Alerts</Link>
-        </nav>
-
-        <div className="nav-actions">
-          <Link to="/login" className="login-btn">
-            Login
-          </Link>
-
-          <Link to="/signup" className="signup-btn">
-            Sign Up
-          </Link>
-        </div>
-      </header>
-
       <main>
-
+        {/* Hero Section */}
         <section className="hero">
-
           <div className="hero-content">
 
             <div className="hero-badge">
@@ -59,13 +34,14 @@ function Home() {
                 Create Account
               </Link>
             </div>
-
           </div>
 
+          {/* Hero Job Preview */}
           <div className="hero-card">
 
             <div className="floating-card top-card">
               <span className="card-icon">💼</span>
+
               <div>
                 <strong>12,500+</strong>
                 <small>Jobs available</small>
@@ -73,7 +49,6 @@ function Home() {
             </div>
 
             <div className="main-job-card">
-
               <div className="company-icon">
                 G
               </div>
@@ -91,11 +66,11 @@ function Home() {
               <div className="save-icon">
                 ♡
               </div>
-
             </div>
 
             <div className="floating-card bottom-card">
               <span className="success-icon">✓</span>
+
               <div>
                 <strong>Career progress</strong>
                 <small>Application submitted</small>
@@ -103,12 +78,10 @@ function Home() {
             </div>
 
           </div>
-
         </section>
 
-
+        {/* Statistics */}
         <section className="stats-section">
-
           <div>
             <strong>12K+</strong>
             <span>Active Jobs</span>
@@ -128,14 +101,13 @@ function Home() {
             <strong>98%</strong>
             <span>User Satisfaction</span>
           </div>
-
         </section>
 
-
+        {/* Features */}
         <section className="features-section">
 
           <div className="section-heading">
-            <span>WHY CAREER NEST</span>
+            <span>WHY CAREERNEST</span>
 
             <h2>
               Everything you need for your
@@ -148,7 +120,9 @@ function Home() {
 
             <div className="feature-card">
               <div className="feature-icon">🔎</div>
+
               <h3>Smart Job Search</h3>
+
               <p>
                 Find opportunities using powerful search and filtering
                 options.
@@ -157,7 +131,9 @@ function Home() {
 
             <div className="feature-card">
               <div className="feature-icon">♡</div>
+
               <h3>Save Opportunities</h3>
+
               <p>
                 Keep interesting jobs organized and easily accessible.
               </p>
@@ -165,7 +141,9 @@ function Home() {
 
             <div className="feature-card">
               <div className="feature-icon">📄</div>
+
               <h3>Easy Applications</h3>
+
               <p>
                 Apply for jobs through a simple and organized application
                 process.
@@ -174,21 +152,20 @@ function Home() {
 
             <div className="feature-card">
               <div className="feature-icon">🔔</div>
+
               <h3>Job Alerts</h3>
+
               <p>
                 Stay updated when new opportunities match your interests.
               </p>
             </div>
 
           </div>
-
         </section>
-
       </main>
 
-
+      {/* Footer */}
       <footer className="footer">
-
         <div>
           <div className="logo">
             <span>Career</span>Nest
@@ -203,7 +180,6 @@ function Home() {
           <span>© 2026 CareerNest</span>
           <span>Job Portal Application</span>
         </div>
-
       </footer>
 
     </div>

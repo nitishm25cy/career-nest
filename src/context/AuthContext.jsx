@@ -1,28 +1,35 @@
+
 import { createContext, useContext, useState } from "react";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("careerNestUser");
-
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  // Every fresh website visit starts logged out.
+  const [user, setUser] = useState(null);
 
   const login = (email, password) => {
-    const savedUser = localStorage.getItem("careerNestUser");
+    const savedAccount = localStorage.getItem("careerNestUser");
 
-    if (!savedUser) {
+    if (!savedAccount) {
       return {
         success: false,
         message: "No account found. Please sign up first."
       };
     }
 
-    const registeredUser = JSON.parse(savedUser);
+    let registeredUser;
+
+    try {
+      registeredUser = JSON.parse(savedAccount);
+    } catch {
+      return {
+        success: false,
+        message: "Account information is invalid. Please sign up again."
+      };
+    }
 
     if (
-      registeredUser.email === email &&
+      registeredUser.email.toLowerCase() === email.trim().toLowerCase() &&
       registeredUser.password === password
     ) {
       setUser({
@@ -30,9 +37,7 @@ export function AuthProvider({ children }) {
         email: registeredUser.email
       });
 
-      return {
-        success: true
-      };
+      return { success: true };
     }
 
     return {
@@ -42,22 +47,28 @@ export function AuthProvider({ children }) {
   };
 
   const signup = (name, email, password) => {
-    const existingUser = localStorage.getItem("careerNestUser");
+    const savedAccount = localStorage.getItem("careerNestUser");
 
-    if (existingUser) {
-      const parsedUser = JSON.parse(existingUser);
+    if (savedAccount) {
+      try {
+        const existingUser = JSON.parse(savedAccount);
 
-      if (parsedUser.email === email) {
-        return {
-          success: false,
-          message: "An account with this email already exists."
-        };
+        if (
+          existingUser.email.toLowerCase() === email.trim().toLowerCase()
+        ) {
+          return {
+            success: false,
+            message: "An account with this email already exists."
+          };
+        }
+      } catch {
+        // Replace invalid saved account information.
       }
     }
 
     const newUser = {
-      name,
-      email,
+      name: name.trim(),
+      email: email.trim(),
       password
     };
 
@@ -67,13 +78,11 @@ export function AuthProvider({ children }) {
     );
 
     setUser({
-      name,
-      email
+      name: newUser.name,
+      email: newUser.email
     });
 
-    return {
-      success: true
-    };
+    return { success: true };
   };
 
   const logout = () => {
@@ -84,7 +93,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
+        isAuthenticated: Boolean(user),
         login,
         signup,
         logout

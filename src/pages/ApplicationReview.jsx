@@ -1,23 +1,28 @@
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useJobContext } from "../context/JobContext";
+import { submitApplication } from "../store/applicationsSlice";
 
 function ApplicationReview() {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const { applyJob } = useJobContext();
+
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const application = location.state;
 
-  // If the page is opened directly without application data
+  // Check whether application data exists
   if (!application || !application.job || !application.applicant) {
     return (
       <div className="no-jobs">
         <h2>Application information not found</h2>
 
-        <p>
-          Please go back and apply for a job again.
-        </p>
+        <p>Please go back and apply for a job again.</p>
 
         <Link to="/jobs" className="clear-filter-button">
           Browse Jobs →
@@ -28,49 +33,50 @@ function ApplicationReview() {
 
   const { job, applicant } = application;
 
-  const handleSubmit = () => {
-    applyJob({
-      jobId: job.id,
-      job: job,
-      applicant: applicant
-    });
+  const handleSubmit = async () => {
+    try {
+      setSubmitting(true);
+      setError("");
 
-    navigate(`/application-confirmation/${job.id}`, {
-      state: {
-        job: job,
-        applicant: applicant
-      }
-    });
+      // Submit through Redux; Redux calls the backend API
+      const savedApplication = await dispatch(
+        submitApplication({
+          jobId: String(job.id),
+          job,
+          applicant,
+        })
+      ).unwrap();
+
+      // Keep the existing JobContext synchronized
+      applyJob({
+        ...savedApplication,
+        jobId: String(job.id),
+        job,
+        applicant,
+      });
+
+      navigate(`/application-confirmation/${job.id}`, {
+        state: {
+          job,
+          applicant,
+          application: savedApplication,
+        },
+      });
+    } catch (err) {
+      console.error("Application submission failed:", err);
+
+      setError(
+        "Unable to submit your application. Please check that the backend is running and try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <div className="application-review-page">
-
-      {/* Header */}
-      <header className="site-header">
-        <div className="header-container">
-
-          <Link to="/" className="logo">
-            Career<span>Nest</span>
-          </Link>
-
-          <nav className="main-nav">
-            <Link to="/">Home</Link>
-            <Link to="/jobs">Jobs</Link>
-            <Link to="/saved-jobs">Saved Jobs</Link>
-            <Link to="/applications">Applications</Link>
-            <Link to="/alerts">Job Alerts</Link>
-          </nav>
-
-        </div>
-      </header>
-
-      {/* Review */}
       <section className="application-review-container">
-
-        <span className="hero-tag">
-          CAREERNEST
-        </span>
+        <span className="hero-tag">CAREERNEST</span>
 
         <h1>Review Your Application</h1>
 
@@ -78,9 +84,7 @@ function ApplicationReview() {
           Please check your information before submitting.
         </p>
 
-        {/* Job Information */}
         <div className="review-card">
-
           <h2>Job Details</h2>
 
           <div className="review-item">
@@ -97,12 +101,9 @@ function ApplicationReview() {
             <strong>Location</strong>
             <span>{job.location}</span>
           </div>
-
         </div>
 
-        {/* Applicant Information */}
         <div className="review-card">
-
           <h2>Applicant Details</h2>
 
           <div className="review-item">
@@ -134,16 +135,20 @@ function ApplicationReview() {
             <strong>Cover Letter</strong>
             <span>{applicant.coverLetter}</span>
           </div>
-
         </div>
 
-        {/* Buttons */}
-        <div className="review-actions">
+        {error && (
+          <p role="alert" className="error-message">
+            {error}
+          </p>
+        )}
 
+        <div className="review-actions">
           <button
             type="button"
             className="back-button"
             onClick={() => navigate(-1)}
+            disabled={submitting}
           >
             ← Edit Application
           </button>
@@ -152,14 +157,12 @@ function ApplicationReview() {
             type="button"
             className="apply-button"
             onClick={handleSubmit}
+            disabled={submitting}
           >
-            Submit Application →
+            {submitting ? "Submitting..." : "Submit Application →"}
           </button>
-
         </div>
-
       </section>
-
     </div>
   );
 }

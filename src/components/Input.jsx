@@ -1,3 +1,4 @@
+
 function Input({
   label,
   name,
@@ -5,13 +6,19 @@ function Input({
   value,
   onChange,
   placeholder = "",
-  error = ""
+  error = "",
+  required = false,
+  autoComplete,
+  "aria-describedby": ariaDescribedBy,
+  "aria-invalid": ariaInvalid
 }) {
+  const errorId = `${name}-error`;
+
   return (
     <div className="reusable-input">
-
       <label htmlFor={name}>
         {label}
+        {required && <span aria-hidden="true"> *</span>}
       </label>
 
       <input
@@ -21,14 +28,21 @@ function Input({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        required={required}
+        autoComplete={autoComplete}
+        aria-describedby={
+          [ariaDescribedBy, error ? errorId : null]
+            .filter(Boolean)
+            .join(" ") || undefined
+        }
+        aria-invalid={error ? true : ariaInvalid}
       />
 
       {error && (
-        <small className="input-error">
+        <small className="input-error" id={errorId} role="alert">
           {error}
         </small>
       )}
-
     </div>
   );
 }
